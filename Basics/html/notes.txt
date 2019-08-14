@@ -1,0 +1,13 @@
+SVG Paths
+<path M150 0 L75 200 L225 200 Z/>
+
+M - moveto
+L -lineto
+Z - closepath
+
+
+
+Linear Scales
+- Take in a value and return a new value
+- Domain 
+- Range  
