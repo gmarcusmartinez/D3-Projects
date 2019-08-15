@@ -60,7 +60,6 @@ const update = data => {
   rects
     .enter()
     .append('rect')
-    .attr('width', x.bandwidth)
     .attr('fill', 'orange')
     // Starting Conditions
     .attr('x', d => x(d.name))
@@ -68,6 +67,7 @@ const update = data => {
     .merge(rects)
     // Transition
     .transition(t)
+    .attrTween('width', widthTween)
     .attr('y', d => y(d.orders))
     .attr('height', d => graphHeight - y(d.orders))
 
@@ -109,3 +109,13 @@ Height - 0
 Y - y(d.orders)
 Height - graphHeight - y(d.orders)
 */
+const widthTween = d => {
+  // Define interpolation -> return a function named "i"
+  let i = d3.interpolate(0, x.bandwidth())
+  // Return a function with a time ticker named "t"
+  return function(t) {
+    // Return the value from passing the ticker into the interpolation
+
+    return i(t)
+  }
+}
