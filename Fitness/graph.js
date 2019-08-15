@@ -26,12 +26,55 @@ const xAxisGroup = graph
 
 const yAxisGroup = graph.append('g').attr('class', 'y-axis')
 
+// D3 line path generator
+const line = d3
+  .line()
+  .curve(d3.curveMonotoneX)
+  .x(function(d) {
+    return x(new Date(d.date))
+  })
+  .y(function(d) {
+    return y(d.distance)
+  })
+//Line path element
+const path = graph.append('path')
+
+// Create Dotted Line group and append to Graph
+const dottedLines = graph
+  .append('g')
+  .attr('class', 'lines')
+  .style('opacity', 0)
+// Create x dotted-line group and append to line group
+const xDottedLine = dottedLines
+  .append('line')
+  .attr('stroke', '#aaa')
+  .attr('stroke-width', 1)
+  .attr('stroke-dasharray', 4)
+
+// Create y dotted-line group and append to line group
+const yDottedLine = dottedLines
+  .append('line')
+  .attr('stroke', '#aaa')
+  .attr('stroke-width', 1)
+  .attr('stroke-dasharray', 4)
+
 const update = data => {
   data = data.filter(obj => obj.activity === activity)
+
+  //Sort by date
+  data.sort((a, b) => new Date(a.date) - new Date(b.date))
 
   // Set Scale Domains
   x.domain(d3.extent(data, d => new Date(d.date)))
   y.domain([0, d3.max(data, d => d.distance)])
+
+  //Update Path Data
+  path
+    .data([data])
+    .attr('fill', 'none')
+    .attr('stroke', '#00bfa5')
+    .attr('stroke-width', 2)
+    .attr('d', line)
 
   //Create circles for objects
   const circles = graph.selectAll('circle').data(data)
@@ -49,6 +92,35 @@ const update = data => {
     .attr('cy', d => y(d.distance))
     .attr('fill', '#ccc')
 
+  graph
+    .selectAll('circle')
+    .on('mouseover', (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(250)
+        .attr('r', 8)
+        .attr('fill', '#fff')
+      xDottedLine
+        .attr('x1', x(new Date(d.date)))
+        .attr('x2', x(new Date(d.date)))
+        .attr('y1', graphHeight)
+        .attr('y2', y(d.distance))
+      yDottedLine
+        .attr('x1', 0)
+        .attr('x2', x(new Date(d.date)))
+        .attr('y1', y(d.distance))
+        .attr('y2', y(d.distance))
+
+      dottedLines.style('opacity', 1)
+    })
+    .on('mouseleave', (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(250)
+        .attr('r', 4)
+        .attr('fill', '#ccc')
+      dottedLines.style('opacity', 0)
+    })
   // Create Axes
   const xAxis = d3
     .axisBottom(x)
