@@ -24,21 +24,75 @@ const arcPath = d3
 
 const color = d3.scaleOrdinal(d3['schemeSet3'])
 
+//Legend Setup
+const legendGroup = svg
+  .append('g')
+  .attr(`transform`, `translate(${dims.width + 40}, 10)`)
+const legend = d3
+  .legendColor()
+  .shape('circle')
+  .shapePadding(10)
+  .scale(color)
+
+const tip = d3
+  .tip()
+  .attr('class', 'tip card')
+  .html(d => {
+    let content = `<div class="name">${d.data.name}</div>`
+    content += `<div class="cost">${d.data.cost}</div>`
+    content += `<div class="delete">Click Slice to Delete</div>`
+    return content
+  })
+graph.call(tip)
+
 // Function to draw Paths
 const update = data => {
   //Update color scale domain
   color.domain(data.map(obj => obj.name))
 
+  // Update and Call Legend
+  legendGroup.call(legend)
+  legendGroup.selectAll('text').attr('fill', 'white')
+
   const paths = graph.selectAll('path').data(pie(data))
+  paths
+    .exit()
+    .transition()
+    .duration(750)
+    .attrTween('d', arcTweenExit)
+    .remove()
+  paths
+    .attr('d', arcPath)
+    .transition()
+    .duration(750)
+    .attrTween('d', arcTweenUpdate)
   paths
     .enter()
     .append('path')
     .attr('class', 'arc')
     // Draw Path
-    .attr('d', arcPath)
     .attr('stroke', '#fff')
     .attr('stroke-width', '3px')
     .attr('fill', d => color(d.data.name))
+    .each(function(d) {
+      this._current = d
+    })
+    .transition()
+    .duration(750)
+    .attrTween('d', arcTweenEnter)
+
+  // Add Events
+  graph
+    .selectAll('path')
+    .on('mouseover', (d, i, n) => {
+      tip.show(d, n[i])
+      handleMouseOver(d, i, n)
+    })
+    .on('mouseout', (d, i, n) => {
+      tip.hide()
+      handleMouseOut(d, i, n)
+    })
+    .on('click', handleClick)
 }
 
 // Data Array and Firestore
@@ -65,4 +119,45 @@ db.collection('expenses').onSnapshot(res => {
   update(data)
 })
 
-// Arc Generator
+const arcTweenEnter = d => {
+  let i = d3.interpolate(d.endAngle, d.startAngle)
+  return function(t) {
+    d.startAngle = i(t)
+    return arcPath(d)
+  }
+}
+const arcTweenExit = d => {
+  let i = d3.interpolate(d.startAngle, d.endAngle)
+  return function(t) {
+    d.startAngle = i(t)
+    return arcPath(d)
+  }
+}
+
+// Use function keyword to allow use of this
+function arcTweenUpdate(d) {
+  let i = d3.interpolate(this._current, d)
+  this._current = d
+  return t => {
+    return arcPath(i(t))
+  }
+}
+// Events
+const handleMouseOver = (d, i, n) => {
+  d3.select(n[i])
+    .transition('changeSliceFill')
+    .duration(300)
+    .attr('fill', '#fff')
+}
+const handleMouseOut = (d, i, n) => {
+  d3.select(n[i])
+    .transition('changeSliceFill')
+    .duration(300)
+    .attr('fill', color(d.data.name))
+}
+const handleClick = (d, i, n) => {
+  const id = d.data.id
+  db.collection('expenses')
+    .doc(id)
+    .delete()
+}
