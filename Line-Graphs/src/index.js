@@ -7,10 +7,11 @@ const error = document.querySelector(".error");
 const btns = document.querySelectorAll("button");
 const formAct = document.querySelector("form span");
 
-let activity = "cycling";
-
 btns.forEach(btn => {
   btn.addEventListener("click", e => {
+    const update = require("./update");
+    const { data } = require("./graph");
+    let activity = "cycling";
     activity = e.target.dataset.activity;
     btns.forEach(btn => btn.classList.remove("active"));
     e.target.classList.add("active");
@@ -20,6 +21,9 @@ btns.forEach(btn => {
 
     //Set text of form span
     formAct.textContent = activity;
+
+    //Call the update function
+    update(data, activity);
   });
 });
 

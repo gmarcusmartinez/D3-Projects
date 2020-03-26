@@ -97,10 +97,11 @@ const error = document.querySelector(".error");
 const btns = document.querySelectorAll("button");
 const formAct = document.querySelector("form span");
 
-let activity = "cycling";
-
 btns.forEach(btn => {
   btn.addEventListener("click", e => {
+    const update = __webpack_require__(524);
+    const { data } = __webpack_require__(2);
+    let activity = "cycling";
     activity = e.target.dataset.activity;
     btns.forEach(btn => btn.classList.remove("active"));
     e.target.classList.add("active");
@@ -110,6 +111,9 @@ btns.forEach(btn => {
 
     //Set text of form span
     formAct.textContent = activity;
+
+    //Call the update function
+    update(data, activity);
   });
 });
 
@@ -160,10 +164,13 @@ module.exports = db;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "data", function() { return data; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "graph", function() { return graph; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "x", function() { return x; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "y", function() { return y; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "xAxisGroup", function() { return xAxisGroup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "yAxisGroup", function() { return yAxisGroup; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "line", function() { return line; });
 const d3 = __webpack_require__(3);
 const db = __webpack_require__(1);
 const data = [];
@@ -194,6 +201,16 @@ const xAxisGroup = graph
 
 const yAxisGroup = graph.append("g").attr("class", "y-axis");
 
+// Line Path Generator
+const line = d3
+  .line()
+  .curve(d3.curveMonotoneX)
+  .x(function(d) {
+    return x(new Date(d.date));
+  })
+  .y(function(d) {
+    return y(d.distance);
+  });
 const update = __webpack_require__(524);
 
 db.collection("activities").onSnapshot(res => {
@@ -26905,19 +26922,83 @@ function nopropagation() {
 
 const d3 = __webpack_require__(3);
 
-const { x, y, xAxisGroup, yAxisGroup } = __webpack_require__(2);
+const { x, y, xAxisGroup, yAxisGroup, graph, line } = __webpack_require__(2);
 
-const update = data => {
+const path = graph.append("path");
+
+// // Create Dotted Line group and append to Graph
+// const dottedLines = graph
+//   .append("g")
+//   .attr("class", "lines")
+//   .style("opacity", 0);
+// // Create x dotted-line group and append to line group
+// const xDottedLine = dottedLines
+//   .append("line")
+//   .attr("stroke", "#aaa")
+//   .attr("stroke-width", 1)
+//   .attr("stroke-dasharray", 4);
+
+// // Create y dotted-line group and append to line group
+// const yDottedLine = dottedLines
+//   .append("line")
+//   .attr("stroke", "#aaa")
+//   .attr("stroke-width", 1)
+//   .attr("stroke-dasharray", 4);
+
+const update = (data, activity) => {
+  //0) Filter Data by Activity
+  data = data.filter(item => item.activity === activity);
+  // - Sort Data by Date
+  data.sort((a, b) => new Date(a.date) - new Date(b.date));
+  // 1) Update Any Scales Which Rely On Data
   x.domain(d3.extent(data, d => new Date(d.date)));
   y.domain([0, d3.max(data, d => d.distance)]);
 
+  // Update Path Data
+  path
+    .data([data])
+    .attr("fill", "none")
+    .attr("stroke", "#00bfa5")
+    .attr("stroke-width", 2)
+    .attr("d", line);
+
+  // 2)Join Updated Data to Elements
+  const circles = graph.selectAll("circle").data(data);
+
+  // 3)Remove Unwanted Shapes Using the Exix Selection
+  circles.exit().remove();
+
+  // 4)Update Current Shapes in DOM
+  circles.attr("cx", d => x(new Date(d.date))).attr("cy", d => y(d.distance));
+
+  // 5)Append the Enter Selection to the DOM
+  circles
+    .enter()
+    .append("circle")
+    .attr("r", 4)
+    .attr("cx", d => x(new Date(d.date)))
+    .attr("cy", d => y(d.distance))
+    .attr("fill", "#fff");
+
   // Create Axes
-  const xAxis = d3.axisBottom(x).ticks(4);
-  const yAxis = d3.axisLeft(y).ticks(4);
+  const xAxis = d3
+    .axisBottom(x)
+    .ticks(4)
+    .tickFormat(d3.timeFormat("%b %d"));
+  const yAxis = d3
+    .axisLeft(y)
+    .ticks(4)
+    .tickFormat(d => d + `km`);
 
   // Call Axes
   xAxisGroup.call(xAxis);
   yAxisGroup.call(yAxis);
+
+  // Rotate Axes Text
+  xAxisGroup
+    .selectAll("text")
+    .attr("transform", "rotate(-40)")
+    .attr("text-anchor", "end");
 };
 
 module.exports = update;

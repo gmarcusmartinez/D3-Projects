@@ -20,3 +20,16 @@ button.active {
 form span {
   color: #00bfa5;
 }
+
+.x-axis path,
+.y-axis path,
+.x-axis line,
+.y-axis line {
+  stroke: #fff;
+}
+
+.x-axis text,
+.y-axis text {
+  fill: #fff;
+  font-size: 14px;
+}

@@ -1,6 +1,6 @@
 const d3 = require("d3");
 const db = require("./db");
-const data = [];
+export const data = [];
 
 const margin = { top: 40, right: 20, bottom: 50, left: 100 };
 const graphWidth = 560 - margin.left - margin.right;
@@ -12,7 +12,7 @@ const svg = d3
   .attr("width", graphWidth + margin.left + margin.right)
   .attr("height", graphHeight + margin.top + margin.bottom);
 
-const graph = svg
+export const graph = svg
   .append("g")
   .attr("width", graphWidth)
   .attr("height", graphHeight)
@@ -28,6 +28,16 @@ export const xAxisGroup = graph
 
 export const yAxisGroup = graph.append("g").attr("class", "y-axis");
 
+// Line Path Generator
+export const line = d3
+  .line()
+  .curve(d3.curveMonotoneX)
+  .x(function(d) {
+    return x(new Date(d.date));
+  })
+  .y(function(d) {
+    return y(d.distance);
+  });
 const update = require("./update");
 
 db.collection("activities").onSnapshot(res => {
