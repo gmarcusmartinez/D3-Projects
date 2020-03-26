@@ -1,0 +1,15 @@
+/* label focus color */
+.input-field input[type="text"]:focus + label {
+  display: none;
+}
+/* label underline focus color */
+.input-field input[type="text"]:focus {
+  border-bottom: 1px solid #5c6bc0 !important;
+  box-shadow: 0 1px 0 0 #5c6bc0 !important;
+}
+
+.tip {
+  padding: 1rem;
+  background-color: #333;
+  color: #fff;
+}

@@ -1,5 +1,6 @@
 const d3 = require("d3");
 const db = require("./db");
+
 export const data = [];
 
 const margin = { top: 40, right: 20, bottom: 50, left: 100 };
@@ -38,6 +39,7 @@ export const line = d3
   .y(function(d) {
     return y(d.distance);
   });
+
 const update = require("./update");
 
 db.collection("activities").onSnapshot(res => {

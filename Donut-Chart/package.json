@@ -1,0 +1,20 @@
+{
+  "name": "bar-chart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "d3": "^5.15.0",
+    "d3-svg-legend": "^2.25.6",
+    "d3-tip": "^0.9.1"
+  }
+}
