@@ -173,6 +173,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "line", function() { return line; });
 const d3 = __webpack_require__(3);
 const db = __webpack_require__(1);
+
 const data = [];
 
 const margin = { top: 40, right: 20, bottom: 50, left: 100 };
@@ -211,6 +212,7 @@ const line = d3
   .y(function(d) {
     return y(d.distance);
   });
+
 const update = __webpack_require__(524);
 
 db.collection("activities").onSnapshot(res => {
@@ -26926,24 +26928,24 @@ const { x, y, xAxisGroup, yAxisGroup, graph, line } = __webpack_require__(2);
 
 const path = graph.append("path");
 
-// // Create Dotted Line group and append to Graph
-// const dottedLines = graph
-//   .append("g")
-//   .attr("class", "lines")
-//   .style("opacity", 0);
-// // Create x dotted-line group and append to line group
-// const xDottedLine = dottedLines
-//   .append("line")
-//   .attr("stroke", "#aaa")
-//   .attr("stroke-width", 1)
-//   .attr("stroke-dasharray", 4);
+// Create Dotted Line group and append to Graph
+const dottedLines = graph
+  .append("g")
+  .attr("class", "lines")
+  .style("opacity", 0);
+// Create x dotted-line group and append to line group
+const xDottedLine = dottedLines
+  .append("line")
+  .attr("stroke", "#aaa")
+  .attr("stroke-width", 1)
+  .attr("stroke-dasharray", 4);
 
-// // Create y dotted-line group and append to line group
-// const yDottedLine = dottedLines
-//   .append("line")
-//   .attr("stroke", "#aaa")
-//   .attr("stroke-width", 1)
-//   .attr("stroke-dasharray", 4);
+// Create y dotted-line group and append to line group
+const yDottedLine = dottedLines
+  .append("line")
+  .attr("stroke", "#aaa")
+  .attr("stroke-width", 1)
+  .attr("stroke-dasharray", 4);
 
 const update = (data, activity) => {
   //0) Filter Data by Activity
@@ -26980,6 +26982,37 @@ const update = (data, activity) => {
     .attr("cy", d => y(d.distance))
     .attr("fill", "#fff");
 
+  // Mouse Over Events
+  // - n represents array of circles
+  graph
+    .selectAll("circle")
+    .on("mouseover", (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(100)
+        .attr("r", 8);
+
+      xDottedLine
+        .attr("x1", x(new Date(d.date)))
+        .attr("x2", x(new Date(d.date)))
+        .attr("y1", 310)
+        .attr("y2", y(d.distance));
+
+      yDottedLine
+        .attr("x1", 0)
+        .attr("x2", x(new Date(d.date)))
+        .attr("y1", y(d.distance))
+        .attr("y2", y(d.distance));
+
+      dottedLines.style("opacity", 1);
+    })
+    .on("mouseout", (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(100)
+        .attr("r", 4);
+      dottedLines.style("opacity", 0);
+    });
   // Create Axes
   const xAxis = d3
     .axisBottom(x)
