@@ -4,6 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tree Diagram</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
   </head>
-  <body></body>
+  <body>
+    <div class="pink lighten-4 section">
+      <h4 class="white-text center">Tree Diagram</h4>
+    </div>
+    <button
+      data-target="modal"
+      class="btn-floating btn-large pink lighten-4 right halfway-fab modal-trigger"
+    >
+      +
+    </button>
+  </body>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h6 class="pink-text text-lighten-4 center">Add</h6>
+      <form>
+        <div class="input-field">
+          <input type="text" id="name" placeholder="Name" />
+        </div>
+        <div class="input-field">
+          <input type="text" id="parent" placeholder="Parent" />
+        </div>
+        <div class="input-field">
+          <input type="text" id="department" placeholder="Dep" />
+        </div>
+        <div class="input-field">
+          <input type="submit" class="btn pink lighten-4 white-text" />
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="canvas"></div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+  <script src="./dist/bundle.js"></script>
 </html>

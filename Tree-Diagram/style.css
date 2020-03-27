@@ -1,0 +1,24 @@
+button {
+  position: fixed;
+  top: 128px;
+}
+
+text {
+  font-family: Arial, Helvetica, sans-serif;
+}
+.modal {
+  max-width: 500px;
+}
+.canvas {
+  margin-top: 40px;
+}
+
+/* label focus color */
+.input-field input[type="text"]:focus + label {
+  display: none;
+}
+/* label underline focus color */
+.input-field input[type="text"]:focus {
+  border-bottom: 1px solid #f8bbd0 !important;
+  box-shadow: 0 1px 0 0 #f8bbd0 !important;
+}
