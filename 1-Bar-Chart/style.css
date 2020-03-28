@@ -1,0 +1,35 @@
+* {
+}
+.canvas svg {
+  border: 2px solid black;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+form {
+  margin-top: 1rem;
+}
+
+form input[type="text"] {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  box-shadow: none;
+  border: none;
+  border: 2px solid #000;
+}
+
+form input[type="submit"] {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  width: 75px;
+  box-shadow: none;
+  border: none;
+  border: 2px solid #000;
+}
+
+input:focus {
+  outline: none;
+}

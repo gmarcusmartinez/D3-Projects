@@ -1,0 +1,8 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas svg {
+  border: 1px solid black;
+}
