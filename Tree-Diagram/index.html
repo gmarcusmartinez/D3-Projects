@@ -11,42 +11,41 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="pink lighten-4 section">
-      <h4 class="white-text center">Tree Diagram</h4>
+    <nav class="white">
+      <button
+        data-target="modal"
+        class="btn-large pink lighten-4 right modal-trigger"
+      >
+        Add Person
+      </button>
+    </nav>
+
+    <div class="container">
+      <div class="canvas"></div>
     </div>
-    <button
-      data-target="modal"
-      class="btn-floating btn-large pink lighten-4 right halfway-fab modal-trigger"
-    >
-      +
-    </button>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h6 class="pink-text text-lighten-4 center">Add</h6>
+        <form>
+          <div class="input-field">
+            <input type="text" id="name" placeholder="Name" />
+          </div>
+          <div class="input-field">
+            <input type="text" id="parent" placeholder="Parent" />
+          </div>
+          <div class="input-field">
+            <input type="text" id="department" placeholder="Dep" />
+          </div>
+          <div class="input-field">
+            <input type="submit" class="btn pink lighten-4 white-text" />
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+    <script src="./dist/bundle.js"></script>
   </body>
-
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <h6 class="pink-text text-lighten-4 center">Add</h6>
-      <form>
-        <div class="input-field">
-          <input type="text" id="name" placeholder="Name" />
-        </div>
-        <div class="input-field">
-          <input type="text" id="parent" placeholder="Parent" />
-        </div>
-        <div class="input-field">
-          <input type="text" id="department" placeholder="Dep" />
-        </div>
-        <div class="input-field">
-          <input type="submit" class="btn pink lighten-4 white-text" />
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="container">
-    <div class="canvas"></div>
-  </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
-  <script src="./dist/bundle.js"></script>
 </html>

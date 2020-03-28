@@ -1,7 +1,7 @@
 const d3 = require("d3");
 const data = [];
 
-const dims = { height: 500, width: 1100 };
+const dims = { height: 500, width: 800 };
 const svg = d3
   .select(".canvas")
   .append("svg")

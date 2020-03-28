@@ -1,6 +1,7 @@
-button {
-  position: fixed;
-  top: 128px;
+nav {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
 }
 
 text {
