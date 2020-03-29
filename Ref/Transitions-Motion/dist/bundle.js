@@ -109,11 +109,6 @@ svg
   .data(data)
   .enter()
   .append("rect")
-  // Transitions
-  .transition()
-  .duration(1000)
-  // Ease
-  .ease(d3.easeCircleIn)
   .attr("x", (d, i) => xScale(i))
   .attr("y", (d, i) => height - yScale(d))
   .attr("width", xScale.bandwidth())
@@ -126,9 +121,6 @@ svg
   .data(data)
   .enter()
   .append("text")
-  .transition()
-  .duration(1000)
-  .ease(d3.easeCircleIn)
   .text(d => d)
   .attr("text-anchor", "middle")
   .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
@@ -138,39 +130,33 @@ svg
   .attr("fill", "white");
 
 d3.select("button").on("click", e => {
-  dataSet = [
-    11,
-    12,
-    15,
-    20,
-    18,
-    17,
-    16,
-    18,
-    23,
-    25,
-    5,
-    10,
-    13,
-    19,
-    21,
-    25,
-    22,
-    18,
-    15,
-    13
-  ];
+  let num = data.length;
+  const dataset = [];
+  const maxValue = 25;
+
+  for (let i = 0; i < num; i++) {
+    const el = Math.floor(Math.random() * maxValue);
+    dataset.push(el);
+  }
   // Update Rectangles
   svg
     .selectAll("rect")
-    .data(dataSet)
+    .data(dataset)
+    .transition()
+    .delay((d, i) => (i / dataset.length) * 1000)
+    .duration(500)
+    .ease(d3.easeCircleIn)
     .attr("y", d => height - yScale(d))
     .attr("height", d => yScale(d));
 
   // Update Text
   svg
     .selectAll("text")
-    .data(dataSet)
+    .data(dataset)
+    .transition()
+    .delay((d, i) => (i / dataset.length) * 1000)
+    .duration(500)
+    .ease(d3.easeCircleIn)
     .text(d => d)
     .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
     .attr("y", d => height - yScale(d) + 15);
