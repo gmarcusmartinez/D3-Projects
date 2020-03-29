@@ -53,8 +53,12 @@ svg
   .attr("transform", `translate(${padding},0)`)
   .call(yAxis);
 
-// Create Circles
+//Create Group for Circles
 svg
+  .append("g")
+  .attr("id", "circles")
+  .attr("clip-path", "url(#chart-area)")
+  // Create Circles
   .selectAll("circle")
   .data(data)
   .enter()
@@ -62,6 +66,16 @@ svg
   .attr("cx", d => xScale(d[0]))
   .attr("cy", d => yScale(d[1]))
   .attr("r", 2);
+
+// Define a clipping path
+svg
+  .append("clipPath")
+  .attr("id", "chart-area")
+  .append("rect")
+  .attr("x", padding)
+  .attr("y", padding)
+  .attr("width", width - padding * 3)
+  .attr("height", height - padding * 2);
 
 // Update
 d3.select("button").on("click", () => {
