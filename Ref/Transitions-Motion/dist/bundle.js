@@ -132,12 +132,15 @@ svg
 d3.select("button").on("click", e => {
   let num = data.length;
   const dataset = [];
-  const maxValue = 25;
+  const maxValue = 100;
 
   for (let i = 0; i < num; i++) {
     const el = Math.floor(Math.random() * maxValue);
     dataset.push(el);
   }
+  //1) Update Scale domains
+  yScale.domain([0, d3.max(dataset)]);
+
   // Update Rectangles
   svg
     .selectAll("rect")
