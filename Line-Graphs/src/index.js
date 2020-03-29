@@ -7,11 +7,11 @@ const error = document.querySelector(".error");
 const btns = document.querySelectorAll("button");
 const formAct = document.querySelector("form span");
 
+const data = [];
+
 btns.forEach(btn => {
   btn.addEventListener("click", e => {
     const update = require("./update");
-    const { data } = require("./graph");
-    let activity = "cycling";
     activity = e.target.dataset.activity;
     btns.forEach(btn => btn.classList.remove("active"));
     e.target.classList.add("active");
@@ -45,3 +45,5 @@ form.addEventListener("submit", e => {
     error.textContent = "Please enter a valid distance";
   }
 });
+
+module.exports = data;

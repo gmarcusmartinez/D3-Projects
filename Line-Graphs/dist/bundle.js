@@ -89,7 +89,7 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 const db = __webpack_require__(1);
-__webpack_require__(2);
+__webpack_require__(524);
 
 const form = document.querySelector("form");
 const input = document.querySelector("input");
@@ -97,11 +97,11 @@ const error = document.querySelector(".error");
 const btns = document.querySelectorAll("button");
 const formAct = document.querySelector("form span");
 
+const data = [];
+
 btns.forEach(btn => {
   btn.addEventListener("click", e => {
-    const update = __webpack_require__(524);
-    const { data } = __webpack_require__(2);
-    let activity = "cycling";
+    const update = __webpack_require__(2);
     activity = e.target.dataset.activity;
     btns.forEach(btn => btn.classList.remove("active"));
     e.target.classList.add("active");
@@ -136,12 +136,16 @@ form.addEventListener("submit", e => {
   }
 });
 
+module.exports = data;
+
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-var firebaseConfig = {
+const update = __webpack_require__(2);
+
+const firebaseConfig = {
   apiKey: "AIzaSyAl9x6AYIW-pYXg2hr7JoeAIMATjdf8HFw",
   authDomain: "d3-firebase-91d5e.firebaseapp.com",
   databaseURL: "https://d3-firebase-91d5e.firebaseio.com",
@@ -153,69 +157,10 @@ var firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-let db = firebase.firestore();
-
-module.exports = db;
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "data", function() { return data; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "graph", function() { return graph; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "x", function() { return x; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "y", function() { return y; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "xAxisGroup", function() { return xAxisGroup; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "yAxisGroup", function() { return yAxisGroup; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "line", function() { return line; });
-const d3 = __webpack_require__(3);
-const db = __webpack_require__(1);
-
-const data = [];
-
-const margin = { top: 40, right: 20, bottom: 50, left: 100 };
-const graphWidth = 560 - margin.left - margin.right;
-const graphHeight = 400 - margin.top - margin.bottom;
-
-const svg = d3
-  .select(".canvas")
-  .append("svg")
-  .attr("width", graphWidth + margin.left + margin.right)
-  .attr("height", graphHeight + margin.top + margin.bottom);
-
-const graph = svg
-  .append("g")
-  .attr("width", graphWidth)
-  .attr("height", graphHeight)
-  .attr("transform", `translate(${margin.left},${margin.top})`);
-
-const x = d3.scaleTime().range([0, graphWidth]);
-const y = d3.scaleLinear().range([graphHeight, 0]);
-
-const xAxisGroup = graph
-  .append("g")
-  .attr("class", "x-axis")
-  .attr("transform", `translate(0, ${graphHeight})`);
-
-const yAxisGroup = graph.append("g").attr("class", "y-axis");
-
-// Line Path Generator
-const line = d3
-  .line()
-  .curve(d3.curveMonotoneX)
-  .x(function(d) {
-    return x(new Date(d.date));
-  })
-  .y(function(d) {
-    return y(d.distance);
-  });
-
-const update = __webpack_require__(524);
+const db = firebase.firestore();
 
 db.collection("activities").onSnapshot(res => {
+  const data = __webpack_require__(0);
   res.docChanges().forEach(change => {
     const doc = { ...change.doc.data(), id: change.doc.id };
     switch (change.type) {
@@ -235,6 +180,116 @@ db.collection("activities").onSnapshot(res => {
   });
   update(data);
 });
+
+module.exports = db;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const d3 = __webpack_require__(3);
+
+const {
+  x,
+  y,
+  xAxisGroup,
+  yAxisGroup,
+  xDottedLine,
+  yDottedLine,
+  graph,
+  line,
+  path
+} = __webpack_require__(524);
+
+const update = (data, activity = "cycling") => {
+  //0) Filter Data by Activity
+  data = data.filter(item => item.activity === activity);
+  data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // 1) Update Any Scales Which Rely On Data
+  x.domain(d3.extent(data, d => new Date(d.date)));
+  y.domain([0, d3.max(data, d => d.distance)]);
+
+  // Update Path Data
+  path
+    .data([data])
+    .attr("fill", "none")
+    .attr("stroke", "#00bfa5")
+    .attr("stroke-width", 2)
+    .attr("d", line);
+
+  // 2)Join Updated Data to Elements
+  const circles = graph.selectAll("circle").data(data);
+
+  // 3)Remove Unwanted Shapes Using the Exix Selection
+  circles.exit().remove();
+
+  // 4)Update Current Shapes in DOM
+  circles.attr("cx", d => x(new Date(d.date))).attr("cy", d => y(d.distance));
+
+  // 5)Append the Enter Selection to the DOM
+  circles
+    .enter()
+    .append("circle")
+    .attr("r", 4)
+    .attr("cx", d => x(new Date(d.date)))
+    .attr("cy", d => y(d.distance))
+    .attr("fill", "#fff");
+
+  // Mouse Over Events
+  // - n represents array of circles
+  graph
+    .selectAll("circle")
+    .on("mouseover", (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(100)
+        .attr("r", 8);
+
+      xDottedLine
+        .attr("x1", x(new Date(d.date)))
+        .attr("x2", x(new Date(d.date)))
+        .attr("y1", 310)
+        .attr("y2", y(d.distance));
+
+      yDottedLine
+        .attr("x1", 0)
+        .attr("x2", x(new Date(d.date)))
+        .attr("y1", y(d.distance))
+        .attr("y2", y(d.distance));
+
+      dottedLines.style("opacity", 1);
+    })
+    .on("mouseout", (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(100)
+        .attr("r", 4);
+      dottedLines.style("opacity", 0);
+    });
+  // Create Axes
+  const xAxis = d3
+    .axisBottom(x)
+    .ticks(4)
+    .tickFormat(d3.timeFormat("%b %d"));
+  const yAxis = d3
+    .axisLeft(y)
+    .ticks(4)
+    .tickFormat(d => d + `km`);
+
+  // Call Axes
+  xAxisGroup.call(xAxis);
+  yAxisGroup.call(yAxis);
+
+  // Rotate Axes Text
+  xAxisGroup
+    .selectAll("text")
+    .attr("transform", "rotate(-40)")
+    .attr("text-anchor", "end");
+};
+
+module.exports = update;
 
 
 /***/ }),
@@ -26924,9 +26979,42 @@ function nopropagation() {
 
 const d3 = __webpack_require__(3);
 
-const { x, y, xAxisGroup, yAxisGroup, graph, line } = __webpack_require__(2);
+const margin = { top: 40, right: 20, bottom: 50, left: 100 };
+const graphWidth = 560 - margin.left - margin.right;
+const graphHeight = 400 - margin.top - margin.bottom;
 
-const path = graph.append("path");
+const svg = d3
+  .select(".canvas")
+  .append("svg")
+  .attr("width", graphWidth + margin.left + margin.right)
+  .attr("height", graphHeight + margin.top + margin.bottom);
+
+const graph = svg
+  .append("g")
+  .attr("width", graphWidth)
+  .attr("height", graphHeight)
+  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+const x = d3.scaleTime().range([0, graphWidth]);
+const y = d3.scaleLinear().range([graphHeight, 0]);
+
+const xAxisGroup = graph
+  .append("g")
+  .attr("class", "x-axis")
+  .attr("transform", `translate(0, ${graphHeight})`);
+
+const yAxisGroup = graph.append("g").attr("class", "y-axis");
+
+// Line Path Generator
+const line = d3
+  .line()
+  .curve(d3.curveMonotoneX)
+  .x(function(d) {
+    return x(new Date(d.date));
+  })
+  .y(function(d) {
+    return y(d.distance);
+  });
 
 // Create Dotted Line group and append to Graph
 const dottedLines = graph
@@ -26947,94 +27035,19 @@ const yDottedLine = dottedLines
   .attr("stroke-width", 1)
   .attr("stroke-dasharray", 4);
 
-const update = (data, activity) => {
-  //0) Filter Data by Activity
-  data = data.filter(item => item.activity === activity);
-  // - Sort Data by Date
-  data.sort((a, b) => new Date(a.date) - new Date(b.date));
-  // 1) Update Any Scales Which Rely On Data
-  x.domain(d3.extent(data, d => new Date(d.date)));
-  y.domain([0, d3.max(data, d => d.distance)]);
+const path = graph.append("path");
 
-  // Update Path Data
-  path
-    .data([data])
-    .attr("fill", "none")
-    .attr("stroke", "#00bfa5")
-    .attr("stroke-width", 2)
-    .attr("d", line);
-
-  // 2)Join Updated Data to Elements
-  const circles = graph.selectAll("circle").data(data);
-
-  // 3)Remove Unwanted Shapes Using the Exix Selection
-  circles.exit().remove();
-
-  // 4)Update Current Shapes in DOM
-  circles.attr("cx", d => x(new Date(d.date))).attr("cy", d => y(d.distance));
-
-  // 5)Append the Enter Selection to the DOM
-  circles
-    .enter()
-    .append("circle")
-    .attr("r", 4)
-    .attr("cx", d => x(new Date(d.date)))
-    .attr("cy", d => y(d.distance))
-    .attr("fill", "#fff");
-
-  // Mouse Over Events
-  // - n represents array of circles
-  graph
-    .selectAll("circle")
-    .on("mouseover", (d, i, n) => {
-      d3.select(n[i])
-        .transition()
-        .duration(100)
-        .attr("r", 8);
-
-      xDottedLine
-        .attr("x1", x(new Date(d.date)))
-        .attr("x2", x(new Date(d.date)))
-        .attr("y1", 310)
-        .attr("y2", y(d.distance));
-
-      yDottedLine
-        .attr("x1", 0)
-        .attr("x2", x(new Date(d.date)))
-        .attr("y1", y(d.distance))
-        .attr("y2", y(d.distance));
-
-      dottedLines.style("opacity", 1);
-    })
-    .on("mouseout", (d, i, n) => {
-      d3.select(n[i])
-        .transition()
-        .duration(100)
-        .attr("r", 4);
-      dottedLines.style("opacity", 0);
-    });
-  // Create Axes
-  const xAxis = d3
-    .axisBottom(x)
-    .ticks(4)
-    .tickFormat(d3.timeFormat("%b %d"));
-  const yAxis = d3
-    .axisLeft(y)
-    .ticks(4)
-    .tickFormat(d => d + `km`);
-
-  // Call Axes
-  xAxisGroup.call(xAxis);
-  yAxisGroup.call(yAxis);
-
-  // Rotate Axes Text
-  xAxisGroup
-    .selectAll("text")
-    .attr("transform", "rotate(-40)")
-    .attr("text-anchor", "end");
+module.exports = {
+  graph,
+  x,
+  y,
+  line,
+  xAxisGroup,
+  yAxisGroup,
+  path,
+  xDottedLine,
+  yDottedLine
 };
-
-module.exports = update;
 
 
 /***/ })

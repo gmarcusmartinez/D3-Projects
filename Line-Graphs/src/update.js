@@ -1,33 +1,22 @@
 const d3 = require("d3");
 
-const { x, y, xAxisGroup, yAxisGroup, graph, line } = require("./graph");
+const {
+  x,
+  y,
+  xAxisGroup,
+  yAxisGroup,
+  xDottedLine,
+  yDottedLine,
+  graph,
+  line,
+  path
+} = require("./graph");
 
-const path = graph.append("path");
-
-// Create Dotted Line group and append to Graph
-const dottedLines = graph
-  .append("g")
-  .attr("class", "lines")
-  .style("opacity", 0);
-// Create x dotted-line group and append to line group
-const xDottedLine = dottedLines
-  .append("line")
-  .attr("stroke", "#aaa")
-  .attr("stroke-width", 1)
-  .attr("stroke-dasharray", 4);
-
-// Create y dotted-line group and append to line group
-const yDottedLine = dottedLines
-  .append("line")
-  .attr("stroke", "#aaa")
-  .attr("stroke-width", 1)
-  .attr("stroke-dasharray", 4);
-
-const update = (data, activity) => {
+const update = (data, activity = "cycling") => {
   //0) Filter Data by Activity
   data = data.filter(item => item.activity === activity);
-  // - Sort Data by Date
   data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
   // 1) Update Any Scales Which Rely On Data
   x.domain(d3.extent(data, d => new Date(d.date)));
   y.domain([0, d3.max(data, d => d.distance)]);
