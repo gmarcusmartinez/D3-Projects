@@ -16,17 +16,4 @@ d3.select(".add").on("click", e => {
   update(data);
 });
 
-d3.select(".randomize").on("click", e => {
-  const maxValue = 25;
-  let newData = [];
-  for (let i = 0; i < data.length; i++) {
-    newData.push({
-      key: uuid.v4(),
-      value: Math.floor(Math.random() * maxValue)
-    });
-  }
-  update(newData);
-  console.log(newData);
-});
-
 update(data);

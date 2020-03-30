@@ -1,0 +1,19 @@
+.btns {
+  display: flex;
+  justify-content: center;
+}
+button {
+  padding: 0.75rem;
+  background-color: blue;
+  color: #fff;
+  width: 100px;
+  margin: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+#slider {
+  height: 250px;
+  width: 30px;
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
+}
