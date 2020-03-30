@@ -27467,6 +27467,7 @@ module.exports = data;
 
 const d3 = __webpack_require__(1);
 const { svg, height, yScale, xScale } = __webpack_require__(534);
+const { sortBars } = __webpack_require__(535);
 
 const update = data => {
   const key = d => d.key;
@@ -27493,28 +27494,26 @@ const update = data => {
     .attr("x", -xScale.bandwidth())
     .remove();
 
-  // 4)Update Current Shapes in DOM
-  rects
-    .transition()
-    .duration(500)
-    .attr("x", (d, i) => xScale(i))
-    .attr("y", d => height - yScale(d.value))
-    .attr("width", xScale.bandwidth())
-    .attr("height", d => yScale(d.value))
-    .attr("fill", d => `rgb(0, 0,${Math.round(d.value * 10)})`);
-  labels
-    .transition()
-    .duration(500)
-    .text(d => d.value)
-    .attr("text-anchor", "middle")
-    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
-    .attr("y", d => height - yScale(d.value) + 15);
-
   // 5)Append the Enter Selection to the DOM
   rects
     .enter()
     .append("rect")
     .merge(rects)
+    .on("click", () => sortBars())
+    .on("mouseover", function(d) {
+      const xPosition = +d3.select(this).attr("x") + xScale.bandwidth() / 2;
+      const yPosition = +d3.select(this).attr("y") / 2 + height / 2;
+
+      //Update the tooltip position and value
+      d3.select("#tooltip")
+        .style("left", `${xPosition}px`)
+        .style("top", `${yPosition}px`)
+        .select("#value")
+        .text(d.value);
+
+      d3.select("#tooltip").classed("hidden", false);
+    })
+    .on("mouseout", () => d3.select("#tooltip").classed("hidden", true))
     .transition()
     .duration(500)
     // Set new x position, based on the updated xScale
@@ -27558,9 +27557,6 @@ const svg = d3
   .attr("width", width)
   .attr("height", height);
 
-// D3.scaleBand() - els in arbitrary order but must be evenly spaced.
-// Round to nearest whole value for pixel sharpness
-
 const xScale = d3
   .scaleBand()
   .rangeRound([0, width])
@@ -27569,6 +27565,46 @@ const xScale = d3
 const yScale = d3.scaleLinear().range([0, height]);
 
 module.exports = { svg, height, xScale, yScale };
+
+
+/***/ }),
+/* 535 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const d3 = __webpack_require__(1);
+const { svg, xScale } = __webpack_require__(534);
+
+let sortOrder = true;
+
+const sortBars = () => {
+  svg
+    .selectAll("rect")
+    .sort((a, b) =>
+      sortOrder
+        ? d3.ascending(a.value, b.value)
+        : d3.descending(a.value, b.value)
+    )
+    .transition()
+    .delay((d, i) => i * 50)
+    .duration(1000)
+    .attr("x", (d, i) => xScale(i));
+
+  svg
+    .selectAll("text")
+    .sort((a, b) =>
+      sortOrder
+        ? d3.ascending(a.value, b.value)
+        : d3.descending(a.value, b.value)
+    )
+    .transition()
+    .delay((d, i) => i * 50)
+    .duration(1000)
+    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2);
+
+  sortOrder = !sortOrder;
+};
+
+module.exports = { sortBars };
 
 
 /***/ })
