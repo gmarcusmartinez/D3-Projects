@@ -10,22 +10,34 @@ const update = data => {
   // 2)Join Updated Data to Elements
   const rects = svg.selectAll("rect").data(data, key);
   const labels = svg.selectAll("text").data(data);
-  console.log(data);
 
-  // 3)Remove Unwanted Shapes Using the Exix Selection
+  // 3)Remove Unwanted Shapes Using the Exit Selection
   rects
     .exit()
     .transition()
     .duration(500)
-    // Exit stage left
     .attr("x", -xScale.bandwidth())
     .remove();
+
   labels
     .exit()
     .transition()
     .duration(500)
     .attr("x", -xScale.bandwidth())
     .remove();
+
+  // 4)Update Current Shapes in DOM
+  rects
+    .attr("x", (d, i) => xScale(i))
+    .attr("y", d => height - yScale(d.value))
+    .attr("width", xScale.bandwidth())
+    .attr("height", d => yScale(d.value))
+    .attr("fill", d => `rgb(0, 0,${Math.round(d.value * 10)})`);
+  labels
+    .text(d => d.value)
+    .attr("text-anchor", "middle")
+    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
+    .attr("y", d => height - yScale(d.value) + 15);
 
   // 5)Append the Enter Selection to the DOM
   rects
@@ -39,7 +51,8 @@ const update = data => {
     // Set new y position, based on the updated yScale
     .attr("y", d => height - yScale(d.value))
     .attr("width", xScale.bandwidth())
-    .attr("height", d => yScale(d.value));
+    .attr("height", d => yScale(d.value))
+    .attr("fill", d => `rgb(0, 0,${Math.round(d.value * 10)})`);
 
   labels
     .enter()
@@ -48,11 +61,10 @@ const update = data => {
     .attr("text-anchor", "middle")
     .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
     .attr("y", d => height - yScale(d.value) + 15)
+    .attr("fill", "#fff")
     .merge(labels)
     .transition()
-    .duration(500)
-    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
-    .attr("y", d => height - yScale(d.value) + 15);
+    .duration(500);
 };
 
 module.exports = update;
