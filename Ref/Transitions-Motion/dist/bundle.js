@@ -89,103 +89,23 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 const d3 = __webpack_require__(1);
-const width = 600;
-const height = 250;
 
 const data = __webpack_require__(522);
-const createScales = __webpack_require__(523);
+const update = __webpack_require__(523);
 
-const [xScale, yScale] = createScales(data, width, height);
-
-const svg = d3
-  .select(".canvas")
-  .append("svg")
-  .attr("width", width)
-  .attr("height", height);
-
-// Create Bars
-svg
-  .selectAll("rect")
-  .data(data)
-  .enter()
-  .append("rect")
-  .attr("x", (d, i) => xScale(i))
-  .attr("y", (d, i) => height - yScale(d))
-  .attr("width", xScale.bandwidth())
-  .attr("height", d => yScale(d))
-  .attr("fill", d => `rgb(0, 0,${Math.round(d * 10)})`);
-
-// Create Labels
-svg
-  .selectAll("text")
-  .data(data)
-  .enter()
-  .append("text")
-  .text(d => d)
-  .attr("text-anchor", "middle")
-  .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
-  .attr("y", d => height - yScale(d) + 15)
-  .attr("font-family", "sans-serif")
-  .attr("font-size", "11px")
-  .attr("fill", "white");
-
-d3.select("button").on("click", e => {
-  // const maxValue = 25;
-  // const num = Math.floor(Math.random() * maxValue);
-  // data.push(num);
+d3.select(".remove").on("click", e => {
   data.pop();
-  //1) Update Scale domains
-  xScale.domain(d3.range(data.length));
-  yScale.domain([0, d3.max(data)]);
-
-  //Select Rects
-  const rects = svg.selectAll("rect").data(data);
-
-  // 5)Append the Enter Selection to the DOM
-  rects
-    .enter()
-    .append("rect")
-    .attr("x", width)
-    .attr("y", d => height - yScale(d))
-    .attr("width", xScale.bandwidth())
-    .attr("height", d => yScale(d))
-    .attr("fill", d => `rgb(0, 0,${Math.round(d * 10)})`)
-    .merge(rects)
-    .transition()
-    .duration(500)
-    // Set new x position, based on the updated xScale
-    .attr("x", (d, i) => xScale(i))
-    // Set new y position, based on the updated yScale
-    .attr("y", d => height - yScale(d))
-    .attr("width", xScale.bandwidth())
-    .attr("height", d => yScale(d));
-
-  // 3)Remove Unwanted Shapes Using the Exix Selection
-  rects
-    .exit()
-    .transition()
-    .duration(500)
-    // Move past the right edge of the SVG
-    .attr("x", width)
-    // Deletes this element from the DOM once transition is complete
-    .remove();
-
-  const text = svg.selectAll("text").data(data);
-  // Update Text
-  text
-    .enter()
-    .append("text")
-    .text(d => d)
-    .attr("text-anchor", "middle")
-    .text(d => d)
-    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
-    .attr("y", d => height - yScale(d) + 15)
-    .merge(text)
-    .transition()
-    .duration(500)
-    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
-    .attr("y", d => height - yScale(d) + 15);
+  update(data);
 });
+
+d3.select(".add").on("click", e => {
+  const maxValue = 25;
+  const num = Math.floor(Math.random() * maxValue);
+  data.push({ key: 26, value: num });
+  update(data);
+});
+
+update(data);
 
 
 /***/ }),
@@ -26874,26 +26794,26 @@ function nopropagation() {
 /***/ (function(module, exports) {
 
 const data = [
-  5,
-  10,
-  13,
-  19,
-  21,
-  25,
-  22,
-  18,
-  15,
-  13,
-  11,
-  12,
-  15,
-  20,
-  18,
-  17,
-  16,
-  18,
-  23,
-  25
+  { key: 0, value: 5 },
+  { key: 1, value: 10 },
+  { key: 2, value: 13 },
+  { key: 3, value: 19 },
+  { key: 4, value: 21 },
+  { key: 5, value: 25 },
+  { key: 6, value: 22 },
+  { key: 7, value: 18 },
+  { key: 8, value: 15 },
+  { key: 9, value: 13 },
+  { key: 10, value: 11 },
+  { key: 11, value: 12 },
+  { key: 12, value: 15 },
+  { key: 13, value: 20 },
+  { key: 14, value: 18 },
+  { key: 15, value: 17 },
+  { key: 16, value: 16 },
+  { key: 17, value: 18 },
+  { key: 18, value: 23 },
+  { key: 19, value: 25 }
 ];
 
 module.exports = data;
@@ -26904,26 +26824,91 @@ module.exports = data;
 /***/ (function(module, exports, __webpack_require__) {
 
 const d3 = __webpack_require__(1);
+const { svg, height, yScale, xScale } = __webpack_require__(524);
 
-const createScales = (data, width, height) => {
-  const xScale = d3
-    // D3.scaleBand() - els in arbitrary order but must be evenly spaced.
-    .scaleBand()
-    // D3.range() - returns number[] from 0 to specified number in argument
-    .domain(d3.range(data.length))
-    // Round to nearest whole value for pixel sharpness
-    .rangeRound([0, width])
-    .paddingInner(0.05);
+const update = data => {
+  const key = d => d.key;
+  // 1) Update Any Scales Which Rely On Data
+  xScale.domain(d3.range(data.length));
+  yScale.domain([0, d3.max(data, d => d.value)]);
 
-  const yScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(data)])
-    .range([0, height]);
+  // 2)Join Updated Data to Elements
+  const rects = svg.selectAll("rect").data(data, key);
+  const labels = svg.selectAll("text").data(data);
+  console.log(data);
 
-  return [xScale, yScale];
+  // 3)Remove Unwanted Shapes Using the Exix Selection
+  rects
+    .exit()
+    .transition()
+    .duration(500)
+    // Exit stage left
+    .attr("x", -xScale.bandwidth())
+    .remove();
+  labels
+    .exit()
+    .transition()
+    .duration(500)
+    .attr("x", -xScale.bandwidth())
+    .remove();
+
+  // 5)Append the Enter Selection to the DOM
+  rects
+    .enter()
+    .append("rect")
+    .merge(rects)
+    .transition()
+    .duration(500)
+    // Set new x position, based on the updated xScale
+    .attr("x", (d, i) => xScale(i))
+    // Set new y position, based on the updated yScale
+    .attr("y", d => height - yScale(d.value))
+    .attr("width", xScale.bandwidth())
+    .attr("height", d => yScale(d.value));
+
+  labels
+    .enter()
+    .append("text")
+    .text(d => d.value)
+    .attr("text-anchor", "middle")
+    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
+    .attr("y", d => height - yScale(d.value) + 15)
+    .merge(labels)
+    .transition()
+    .duration(500)
+    .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
+    .attr("y", d => height - yScale(d.value) + 15);
 };
 
-module.exports = createScales;
+module.exports = update;
+
+
+/***/ }),
+/* 524 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const d3 = __webpack_require__(1);
+
+const width = 600;
+const height = 250;
+
+const svg = d3
+  .select(".canvas")
+  .append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+// D3.scaleBand() - els in arbitrary order but must be evenly spaced.
+// Round to nearest whole value for pixel sharpness
+
+const xScale = d3
+  .scaleBand()
+  .rangeRound([0, width])
+  .paddingInner(0.05);
+
+const yScale = d3.scaleLinear().range([0, height]);
+
+module.exports = { svg, height, xScale, yScale };
 
 
 /***/ })
