@@ -6,6 +6,8 @@ const name = document.querySelector("#name");
 const cost = document.querySelector("#cost");
 const error = document.querySelector("#error");
 
+const data = [];
+
 form.addEventListener("submit", async e => {
   e.preventDefault();
   if (name.value && cost.value) {
@@ -13,7 +15,7 @@ form.addEventListener("submit", async e => {
       name: name.value,
       cost: +cost.value
     };
-    const res = await db.collection("expenses").add(item);
+    await db.collection("expenses").add(item);
     name.value = "";
     cost.value = "";
     error.textContent = "";
@@ -21,3 +23,5 @@ form.addEventListener("submit", async e => {
     error.textContent = "Please fill out all fields before entering";
   }
 });
+
+module.exports = data;

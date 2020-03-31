@@ -89,12 +89,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 const db = __webpack_require__(1);
-__webpack_require__(2);
+__webpack_require__(524);
 
 const form = document.querySelector("form");
 const name = document.querySelector("#name");
 const cost = document.querySelector("#cost");
 const error = document.querySelector("#error");
+
+const data = [];
 
 form.addEventListener("submit", async e => {
   e.preventDefault();
@@ -103,7 +105,7 @@ form.addEventListener("submit", async e => {
       name: name.value,
       cost: +cost.value
     };
-    const res = await db.collection("expenses").add(item);
+    await db.collection("expenses").add(item);
     name.value = "";
     cost.value = "";
     error.textContent = "";
@@ -112,12 +114,16 @@ form.addEventListener("submit", async e => {
   }
 });
 
+module.exports = data;
+
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-var firebaseConfig = {
+const update = __webpack_require__(2);
+
+const firebaseConfig = {
   apiKey: "AIzaSyAl9x6AYIW-pYXg2hr7JoeAIMATjdf8HFw",
   authDomain: "d3-firebase-91d5e.firebaseapp.com",
   databaseURL: "https://d3-firebase-91d5e.firebaseio.com",
@@ -131,62 +137,8 @@ firebase.initializeApp(firebaseConfig);
 
 let db = firebase.firestore();
 
-module.exports = db;
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "arcPath", function() { return arcPath; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "color", function() { return color; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "graph", function() { return graph; });
-const d3 = __webpack_require__(3);
-const db = __webpack_require__(1);
-
-const dims = { height: 300, width: 300, radius: 150 };
-const center = { x: dims.width / 2 + 5, y: dims.height / 2 + 5 };
-
-const svg = d3
-  .select(".canvas")
-  .append("svg")
-  .attr("width", dims.width + 150)
-  .attr("height", dims.height + 150);
-
-// Data Array and Firestore
-const data = [];
-
-// Arc Path Generator
-const arcPath = d3
-  .arc()
-  //Outer Radius
-  .outerRadius(dims.radius)
-  // Donut Inner Radius
-  .innerRadius(dims.radius / 2);
-
-// Create Color Scheme
-const color = d3.scaleOrdinal(d3["schemePastel2"]);
-color.domain(data.map(obj => obj.name));
-
-// // Legend Setup
-// export const legendGroup = svg
-//   .append("g")
-//   .attr("transform", `translate(${dims.width + 40},10)`);
-// export const legend = d3
-//   .legendColor()
-//   .shape("circle")
-//   .shapePadding(10)
-//   .scale(color);
-
-const graph = svg
-  .append("g")
-  .attr("transform", `translate(${center.x},${center.y})`);
-
-const update = __webpack_require__(524);
-
 db.collection("expenses").onSnapshot(res => {
+  const data = __webpack_require__(0);
   res.docChanges().forEach(change => {
     const doc = { ...change.doc.data(), id: change.doc.id };
     switch (change.type) {
@@ -206,6 +158,100 @@ db.collection("expenses").onSnapshot(res => {
   });
   update(data);
 });
+
+module.exports = db;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const d3 = __webpack_require__(3);
+const { graph, arcPath, color, pie } = __webpack_require__(524);
+
+const update = data => {
+  color.domain(data.map(obj => obj.name));
+
+  const paths = graph.selectAll("path").data(pie(data));
+
+  color.domain(data.map(d => d.name));
+
+  // 3)Remove Unwanted Shapes Using the Exix Selection
+  paths
+    .exit()
+    .style("pointer-events", "none")
+    .transition()
+    .duration(750)
+    .attr("d", arcTweenExit)
+    .remove();
+
+  // 4)Update Current Shapes in DOM
+  paths
+    .attr("d", arcPath)
+    .transition()
+    .duration(750)
+    .attrTween("d", arcTweenUpdate);
+
+  // 5)Append the Enter Selection to the DOM
+  paths
+    .enter()
+    .append("path")
+    .attr("class", "arc")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 3)
+    // Apply '_current' property
+    .each(function(d) {
+      this._current = d;
+    })
+    .attr("fill", d => color(d.data.name))
+    .transition()
+    .duration(500)
+    .attrTween("d", arcTweenEnter);
+};
+
+// Events
+const handleMouseover = (d, i, n) => {
+  //n[i] - Current Path
+  d3.select(n[i])
+    .transition("changeSliceFill")
+    .duration(300)
+    .attr("fill", "#fff");
+};
+
+const handleMouseout = (d, i, n) => {
+  //n[i] - Current Path
+  d3.select(n[i])
+    .transition("changeSliceFill")
+    .duration(300)
+    .attr("fill", color(d.data.name));
+};
+const arcTweenEnter = d => {
+  let i = d3.interpolate(d.endAngle, d.startAngle);
+  return function(t) {
+    d.startAngle = i(t);
+    return arcPath(d);
+  };
+};
+
+const arcTweenExit = d => {
+  let i = d3.interpolate(d.startAngle, d.endAngle);
+  return function(t) {
+    d.startAngle = i(t);
+    return arcPath(d);
+  };
+};
+
+function arcTweenUpdate(d) {
+  // Interpolate between two objects
+  let i = d3.interpolate(this._current, d);
+  // Update current prop with new updated data
+  this._current = d;
+  return function(t) {
+    return arcPath(i(t));
+  };
+}
+
+module.exports = update;
 
 
 /***/ }),
@@ -26894,7 +26940,27 @@ function nopropagation() {
 /***/ (function(module, exports, __webpack_require__) {
 
 const d3 = __webpack_require__(3);
-const { graph, arcPath, color, legendGroup, legend } = __webpack_require__(2);
+
+const dims = { height: 300, width: 300, radius: 150 };
+const center = { x: dims.width / 2 + 5, y: dims.height / 2 + 5 };
+
+const svg = d3
+  .select(".canvas")
+  .append("svg")
+  .attr("width", dims.width + 150)
+  .attr("height", dims.height + 150);
+
+// Arc Path Generator
+const arcPath = d3
+  .arc()
+  .outerRadius(dims.radius)
+  .innerRadius(dims.radius / 2);
+
+const color = d3.scaleOrdinal(d3["schemePastel2"]);
+
+const graph = svg
+  .append("g")
+  .attr("transform", `translate(${center.x},${center.y})`);
 
 const pie = d3
   .pie()
@@ -26903,113 +26969,7 @@ const pie = d3
   // Determine slice by value of cost returns an angle
   .value(d => d.cost);
 
-// D3 tip
-// const tip = d3
-//   .tip()
-//   .attr("class", "tip card")
-//   .html(d => {
-//     let content = `<div class="name">${d.data.name}</div>`;
-//     content += `<div>${d.data.cost}</div>`;
-//     return content;
-//   });
-
-// graph.call(tip);
-
-const update = data => {
-  const paths = graph.selectAll("path").data(pie(data));
-
-  //   legendGroup.call(legend);
-  //   legendGroup.selectAll("text").attr("fill", "#5c6bc0");
-
-  color.domain(data.map(d => d.name));
-
-  // 3)Remove Unwanted Shapes Using the Exix Selection
-  paths
-    .exit()
-    .style("pointer-events", "none")
-    .transition()
-    .duration(750)
-    .attr("d", arcTweenExit)
-    .remove();
-
-  // 4)Update Current Shapes in DOM
-  paths
-    .attr("d", arcPath)
-    .transition()
-    .duration(750)
-    .attrTween("d", arcTweenUpdate);
-
-  // 5)Append the Enter Selection to the DOM
-  paths
-    .enter()
-    .append("path")
-    .attr("class", "arc")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 3)
-    // Apply '_current' property
-    .each(function(d) {
-      this._current = d;
-    })
-    .attr("fill", d => color(d.data.name))
-    .transition()
-    .duration(500)
-    .attrTween("d", arcTweenEnter);
-
-  //Add Events
-  //   graph
-  //     .selectAll("path")
-  //     .on("mouseover", (d, i, n) => {
-  //       tip.show(d, n[i]);
-  //       handleMouseover(d, n, i);
-  //     })
-  //     .on("mouseout", (d, i, n) => {
-  //       tip.hide();
-  //       handleMouseout(d, n, i);
-  //     });
-};
-// Events
-const handleMouseover = (d, i, n) => {
-  //n[i] - Current Path
-  d3.select(n[i])
-    .transition("changeSliceFill")
-    .duration(300)
-    .attr("fill", "#fff");
-};
-
-const handleMouseout = (d, i, n) => {
-  //n[i] - Current Path
-  d3.select(n[i])
-    .transition("changeSliceFill")
-    .duration(300)
-    .attr("fill", color(d.data.name));
-};
-const arcTweenEnter = d => {
-  let i = d3.interpolate(d.endAngle, d.startAngle);
-  return function(t) {
-    d.startAngle = i(t);
-    return arcPath(d);
-  };
-};
-
-const arcTweenExit = d => {
-  let i = d3.interpolate(d.startAngle, d.endAngle);
-  return function(t) {
-    d.startAngle = i(t);
-    return arcPath(d);
-  };
-};
-
-function arcTweenUpdate(d) {
-  // Interpolate between two objects
-  let i = d3.interpolate(this._current, d);
-  // Update current prop with new updated data
-  this._current = d;
-  return function(t) {
-    return arcPath(i(t));
-  };
-}
-
-module.exports = update;
+module.exports = { arcPath, color, graph, pie };
 
 
 /***/ })
