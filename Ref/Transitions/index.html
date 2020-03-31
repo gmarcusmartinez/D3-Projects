@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transitions</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="canvas"></div>
+    </div>
+
+    <div class="actions">
+      <p>Enter a number between 0 - 25</p>
+      <div>
+        <input type="text" id="num-input" />
+        <button id="add">Submit</button>
+        <button class="remove">Remove</button>
+      </div>
+      <p class="error"></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.js"></script>
+    <script src="./src/data.js"></script>
+    <script src="./src/graph.js"></script>
+    <script src="./src/update.js"></script>
+    <script src="./src/index.js"></script>
+  </body>
+</html>

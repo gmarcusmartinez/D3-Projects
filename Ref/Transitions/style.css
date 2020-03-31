@@ -1,3 +1,6 @@
+* {
+  font-family: Arial, Helvetica, sans-serif;
+}
 button {
   background-color: blue;
   color: #fff;
@@ -14,8 +17,19 @@ button {
   align-items: center;
 }
 
-.btns {
+.actions {
+  margin-top: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+}
+input {
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid black;
+}
+.error {
+  font-size: 14px;
+  color: red;
 }
