@@ -14,7 +14,7 @@ const update = data => {
     .enter()
     .append("rect")
     .attr("x", (d, i) => xScale(i))
-    .attr("y", d => yScale(d[0]))
-    .attr("height", d => yScale(d[1]) - yScale(d[0]))
+    .attr("y", d => yScale(d[1]))
+    .attr("height", d => yScale(d[0]) - yScale(d[1]))
     .attr("width", xScale.bandwidth());
 };
