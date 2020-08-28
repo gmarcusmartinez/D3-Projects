@@ -6,12 +6,9 @@ const drawRect = require('./utils/drawRect');
 
 const yScale = require('./utils/yScale');
 const xScale = require('./utils/xScale');
-
 const canvas = require('./utils/createChart');
-d3.csv('../data/boxplot.csv', plotData);
 
-console.log('65', yScale(65));
-console.log(yScale(33));
+d3.csv('../data/boxplot.csv', plotData);
 
 function plotData(data) {
   canvas
