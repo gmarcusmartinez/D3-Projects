@@ -89,19 +89,34 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 const canvas = __webpack_require__(1);
-const plotPoints = __webpack_require__(4);
-const drawLine = __webpack_require__(5);
+const xScale = __webpack_require__(2);
+const yScale = __webpack_require__(3);
+const { movies, colorScale } = __webpack_require__(4);
 
-d3.csv('data/tweetdata.csv', plotData);
+d3.csv('./data/movies.csv', plotData);
 
 function plotData(data) {
-  plotPoints(canvas, data, 'tweets', 'orange');
-  plotPoints(canvas, data, 'retweets', 'blue');
-  plotPoints(canvas, data, 'favorites', 'lightgreen');
+  const stackLayout = d3.stack().keys(movies);
+  const heightScale = d3.scaleLinear().domain([0, 60]).range([0, 480]);
 
-  drawLine(canvas, data, 'tweets', 'orange');
-  drawLine(canvas, data, 'retweets', 'blue');
-  drawLine(canvas, data, 'favorites', 'lightgreen');
+  canvas
+    .selectAll('g.bar')
+    .data(stackLayout(data))
+    .enter()
+    .append('g')
+    .attr('class', 'bar')
+    .each(function (d) {
+      d3.select(this)
+        .selectAll('rect')
+        .data(d)
+        .enter()
+        .append('rect')
+        .attr('x', (_, i) => xScale(i) + 30)
+        .attr('y', (d) => yScale(d[1]))
+        .attr('height', (d) => heightScale(d[1] - d[0]))
+        .attr('width', 40)
+        .style('fill', colorScale(d.key));
+    });
 }
 
 
@@ -113,25 +128,26 @@ const xScale = __webpack_require__(2);
 const yScale = __webpack_require__(3);
 
 const height = 600;
-const svgWidth = 600;
-const chartWidth = 480;
+const width = 600;
 
 const canvas = d3
   .select('.canvas')
   .append('svg')
-  .attr('width', svgWidth)
-  .attr('height', height);
+  .attr('height', height)
+  .attr('width', width)
+  .attr('transform', `translate(50,50)`);
 
 const xAxis = d3
   .axisBottom()
   .scale(xScale)
-  .tickSize(chartWidth)
+  .tickSize(500)
   .tickValues(d3.range(1, 11));
 
-canvas.append('g').call(xAxis);
+canvas.append('g').attr('id', 'xAxisG').call(xAxis);
 
-const yAxis = d3.axisRight().scale(yScale).ticks(10).tickSize(chartWidth);
-canvas.append('g').call(yAxis);
+const yAxis = d3.axisRight().scale(yScale).ticks(10).tickSize(530);
+
+canvas.append('g').attr('id', 'yAxisG').call(yAxis);
 
 module.exports = canvas;
 
@@ -140,9 +156,8 @@ module.exports = canvas;
 /* 2 */
 /***/ (function(module, exports) {
 
-const chartWidth = 480;
+const xScale = d3.scaleLinear().domain([0, 10]).range([0, 500]);
 
-const xScale = d3.scaleLinear().domain([1, 10.5]).range([20, chartWidth]);
 module.exports = xScale;
 
 
@@ -150,59 +165,30 @@ module.exports = xScale;
 /* 3 */
 /***/ (function(module, exports) {
 
-const chartWidth = 480;
-const yScale = d3.scaleLinear().domain([0, 35]).range([chartWidth, 20]);
+const yScale = d3.scaleLinear().domain([0, 60]).range([480, 0]);
 
 module.exports = yScale;
 
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-const xScale = __webpack_require__(2);
-const yScale = __webpack_require__(3);
+const movies = [
+  'titanic',
+  'avatar',
+  'akira',
+  'frozen',
+  'deliverance',
+  'avengers',
+];
 
-const plotPoints = (el, data, dataType, color) =>
-  el
-    .selectAll(`circle.${dataType}`)
-    .data(data)
-    .enter()
-    .append('circle')
-    .attr('class', `${dataType}`)
-    .attr('r', 5)
-    .attr('cx', (d) => xScale(d.day))
-    .attr('cy', (d) => yScale(d[dataType]))
-    .attr('fill', color);
+const colorScale = d3
+  .scaleOrdinal()
+  .domain(movies)
+  .range(['#fcd88a', '#cf7c1c', '#93c464', '#75734F', '#5eafc6', '#41a368']);
 
-module.exports = plotPoints;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const xScale = __webpack_require__(2);
-const yScale = __webpack_require__(3);
-
-const drawLine = (el, data, pointType, color) => {
-  const lambdaXScale = (d) => xScale(d.day);
-
-  const line = d3
-    .line()
-    .x(lambdaXScale)
-    .y((d) => yScale(d[pointType]))
-    .curve(d3.curveStep);
-
-  return el
-    .append('path')
-    .attr('d', line(data))
-    .attr('fill', 'none')
-    .attr('stroke', color)
-    .attr('stroke-width', 2);
-};
-
-module.exports = drawLine;
+module.exports = { movies, colorScale };
 
 
 /***/ })

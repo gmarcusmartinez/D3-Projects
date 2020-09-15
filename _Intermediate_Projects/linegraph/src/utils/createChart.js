@@ -11,12 +11,12 @@ const canvas = d3
   .attr('width', svgWidth)
   .attr('height', height);
 
-// Create Axes
 const xAxis = d3
   .axisBottom()
   .scale(xScale)
   .tickSize(chartWidth)
   .tickValues(d3.range(1, 11));
+
 canvas.append('g').call(xAxis);
 
 const yAxis = d3.axisRight().scale(yScale).ticks(10).tickSize(chartWidth);

@@ -3,6 +3,7 @@ const yScale = require('./yScale');
 
 const drawLine = (el, data, pointType, color) => {
   const lambdaXScale = (d) => xScale(d.day);
+
   const line = d3
     .line()
     .x(lambdaXScale)
